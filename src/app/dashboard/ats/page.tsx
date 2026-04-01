@@ -189,49 +189,49 @@ export default function ATSPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div className="rounded-3xl bg-gradient-to-r from-[#EA4C89] to-[#6366F1] p-[1.5px]">
-        <div className="rounded-[22px] bg-white/90 backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="rounded-[22px] bg-[#050508] backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-[#1A1A2E]">ATS Resume Checker</h1>
-            <p className="text-sm text-slate-500">Analyze your resume with Gemini and track all past checks.</p>
+            <h1 className="text-2xl font-extrabold text-white">ATS Resume Checker</h1>
+            <p className="text-sm text-white/50">Analyze your resume with Gemini and track all past checks.</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="px-4 py-2 rounded-xl bg-[#FDF0F5] border border-[#EA4C89]/10">
+            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
               <p className="text-[10px] font-bold text-[#EA4C89] uppercase tracking-widest">Checks</p>
-              <p className="text-lg font-extrabold text-[#1A1A2E] leading-none">{history.length}</p>
+              <p className="text-lg font-extrabold text-white leading-none">{history.length}</p>
             </div>
-            <div className="px-4 py-2 rounded-xl bg-[#EFF6FF] border border-[#3B82F6]/10">
+            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
               <p className="text-[10px] font-bold text-[#3B82F6] uppercase tracking-widest">Avg ATS</p>
-              <p className="text-lg font-extrabold text-[#1A1A2E] leading-none">{averageScore}%</p>
+              <p className="text-lg font-extrabold text-white leading-none">{averageScore}%</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <section className="xl:col-span-2 glass-card rounded-3xl p-6 space-y-4">
-          <h2 className="text-lg font-bold text-[#1A1A2E]">Run New ATS Check</h2>
+        <section className="xl:col-span-2 glass-dark border-white/10 rounded-3xl p-6 space-y-4">
+          <h2 className="text-lg font-bold text-white">Run New ATS Check</h2>
           <input
             value={targetRole}
             onChange={(event) => setTargetRole(event.target.value)}
             placeholder="Target role (optional), e.g. Frontend Developer"
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:border-[#EA4C89]/40"
+            className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#050508] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#EA4C89]/40"
           />
           <label className="block">
-            <span className="text-xs font-semibold text-slate-500">Resume PDF</span>
+            <span className="text-xs font-semibold text-white/50">Resume PDF</span>
             <input
               type="file"
               accept="application/pdf,.pdf"
               onChange={(event) => setResumeFile(event.target.files?.[0] ?? null)}
-              className="mt-2 w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[#FDF0F5] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-[#EA4C89]"
+              className="mt-2 w-full px-3 py-2.5 rounded-xl border border-white/10 bg-[#050508] text-sm text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-[#EA4C89] file:cursor-pointer"
             />
           </label>
           {resumeFile && (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-white/50">
               Selected: {resumeFile.name}
             </p>
           )}
           <div className="flex items-center justify-between gap-4">
-            <p className="text-xs text-slate-500">Upload one PDF (max 10MB).</p>
+            <p className="text-xs text-white/50">Upload one PDF (max 10MB).</p>
             <button
               onClick={runATSCheck}
               disabled={isRunning || isPersisting}
@@ -243,29 +243,29 @@ export default function ATSPage() {
           {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
         </section>
 
-        <section className="glass-card rounded-3xl p-6 space-y-4">
-          <h2 className="text-lg font-bold text-[#1A1A2E]">Latest Result</h2>
-          {!result && <p className="text-sm text-slate-500">Run a check to see score and suggestions.</p>}
+        <section className="glass-dark border-white/10 rounded-3xl p-6 space-y-4">
+          <h2 className="text-lg font-bold text-white">Latest Result</h2>
+          {!result && <p className="text-sm text-white/50">Run a check to see score and suggestions.</p>}
           {result && (
             <div className="space-y-4">
-              <div className="rounded-2xl bg-[#FDF0F5] border border-[#EA4C89]/10 p-4">
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
                 <p className="text-[10px] font-bold text-[#EA4C89] uppercase tracking-widest">ATS Score</p>
-                <p className="text-4xl font-black text-[#1A1A2E] leading-none">{result.atsScore}%</p>
+                <p className="text-4xl font-black text-white leading-none">{result.atsScore}%</p>
               </div>
-              <p className="text-sm text-slate-600">{result.summary}</p>
+              <p className="text-sm text-white/70">{result.summary}</p>
               <div>
-                <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide mb-2">Suggestions</p>
+                <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wide mb-2">Suggestions</p>
                 <ul className="space-y-1">
                   {result.suggestions.map((item, idx) => (
-                    <li key={`s-${idx}`} className="text-xs text-slate-600">• {item}</li>
+                    <li key={`s-${idx}`} className="text-xs text-white/70">• {item}</li>
                   ))}
                 </ul>
               </div>
               <div>
-                <p className="text-[11px] font-bold text-rose-600 uppercase tracking-wide mb-2">Improvements</p>
+                <p className="text-[11px] font-bold text-rose-400 uppercase tracking-wide mb-2">Improvements</p>
                 <ul className="space-y-1">
                   {result.improvements.map((item, idx) => (
-                    <li key={`i-${idx}`} className="text-xs text-slate-600">• {item}</li>
+                    <li key={`i-${idx}`} className="text-xs text-white/70">• {item}</li>
                   ))}
                 </ul>
               </div>
@@ -274,14 +274,14 @@ export default function ATSPage() {
         </section>
       </div>
 
-      <section className="glass-card rounded-3xl p-6 space-y-4">
+      <section className="glass-dark border-white/10 rounded-3xl p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#1A1A2E]">Past ATS Checks</h2>
-          {isHistoryLoading && <p className="text-xs text-slate-500">Loading history...</p>}
+          <h2 className="text-lg font-bold text-white">Past ATS Checks</h2>
+          {isHistoryLoading && <p className="text-xs text-white/50">Loading history...</p>}
         </div>
 
         {!isHistoryLoading && history.length === 0 && (
-          <p className="text-sm text-slate-500">No ATS checks yet.</p>
+          <p className="text-sm text-white/50">No ATS checks yet.</p>
         )}
 
         {!isHistoryLoading && history.length > 0 && (
@@ -289,18 +289,18 @@ export default function ATSPage() {
             {history.map((item) => {
               const createdAt = item.createdAt?.toDate ? item.createdAt.toDate() : null;
               return (
-                <article key={item.id} className="rounded-2xl border border-slate-100 bg-white/80 p-4 space-y-3">
+                <article key={item.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3 hover:bg-white/10 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-bold text-[#1A1A2E]">{item.targetRole || "General ATS Check"}</p>
-                      <p className="text-[11px] text-slate-500">{createdAt ? createdAt.toLocaleString() : "Date unavailable"}</p>
+                      <p className="text-sm font-bold text-white">{item.targetRole || "General ATS Check"}</p>
+                      <p className="text-[11px] text-white/50">{createdAt ? createdAt.toLocaleString() : "Date unavailable"}</p>
                       {item.resumeFileName && (
-                        <p className="text-[11px] text-slate-500">{item.resumeFileName}</p>
+                        <p className="text-[11px] text-white/50">{item.resumeFileName}</p>
                       )}
                     </div>
-                    <div className="px-2.5 py-1 rounded-lg bg-[#FDF0F5] text-[#EA4C89] text-xs font-bold">{item.atsScore}%</div>
+                    <div className="px-2.5 py-1 rounded-lg bg-[#EA4C89]/10 border border-[#EA4C89]/20 text-[#EA4C89] text-xs font-bold">{item.atsScore}%</div>
                   </div>
-                  <p className="text-xs text-slate-600 line-clamp-3">{item.summary}</p>
+                  <p className="text-xs text-white/70 line-clamp-3">{item.summary}</p>
                 </article>
               );
             })}

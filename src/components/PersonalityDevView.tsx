@@ -207,8 +207,8 @@ export default function PersonalityDevView() {
     return mapping;
   }, [allSkillTitles]);
 
-  const toEmbedUrl = (url: string) => {
-    if (!url) return "about:blank";
+  const getVideoId = (url: string) => {
+    if (!url) return "";
     
     let videoId = "";
     const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
@@ -221,7 +221,7 @@ export default function PersonalityDevView() {
       }
     }
     
-    return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : "about:blank";
+    return videoId;
   };
 
   const getCurrentVideoUrl = (skillTitle: string) => selectedVideos[skillTitle] || randomVideoBySkill[skillTitle];
@@ -420,15 +420,34 @@ export default function PersonalityDevView() {
                                 </option>
                               ))}
                             </select>
-                            <div className="rounded-lg overflow-hidden border border-white/10 bg-black">
-                              <iframe
-                                title={`${skill.title} training video`}
-                                src={toEmbedUrl(getCurrentVideoUrl(skill.title))}
-                                className="w-full aspect-video"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                              />
-                            </div>
+                            <a
+                              href={getCurrentVideoUrl(skill.title)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Watch on YouTube"
+                              className="group relative block w-full aspect-video rounded-lg overflow-hidden border border-white/10 bg-black cursor-pointer"
+                            >
+                              {/* Thumbnail */}
+                              {getVideoId(getCurrentVideoUrl(skill.title)) && (
+                                <img
+                                  src={`https://img.youtube.com/vi/${getVideoId(getCurrentVideoUrl(skill.title))}/maxresdefault.jpg`}
+                                  alt="Video Thumbnail"
+                                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${getVideoId(getCurrentVideoUrl(skill.title))}/hqdefault.jpg`;
+                                  }}
+                                />
+                              )}
+                              
+                              {/* Play Button Overlay */}
+                              <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                                <div className="w-14 h-14 rounded-full bg-red-600/90 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white" className="ml-1">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </a>
                           </div>
                           <button
                             onClick={() => handlePracticeNow(skill.title)}
