@@ -36,8 +36,10 @@ export default function CrackItLoader({ fullScreen = true }: { fullScreen?: bool
 
   const calculateShift = (index: number) => {
     const factor = index % 2 === 0 ? 1 : -1;
-    const dx = (mousePos.x - window.innerWidth / 2) * 0.01 * factor;
-    const dy = (mousePos.y - window.innerHeight / 2) * 0.01 * factor;
+    const innerWidth = typeof window !== "undefined" ? window.innerWidth : 1000;
+    const innerHeight = typeof window !== "undefined" ? window.innerHeight : 1000;
+    const dx = (mousePos.x - innerWidth / 2) * 0.01 * factor;
+    const dy = (mousePos.y - innerHeight / 2) * 0.01 * factor;
     return `translate(${dx}px, ${dy}px)`;
   };
 
