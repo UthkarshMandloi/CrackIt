@@ -4,7 +4,7 @@ import MockQuestionsView from "@/components/MockQuestionsView";
 
 export default function MockQuestionsPage() {
   return (
-    <div className="p-8">
+    <div className="p-8 lg:p-12">
       <MockQuestionsView />
     </div>
   );

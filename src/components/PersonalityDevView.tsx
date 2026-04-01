@@ -1,11 +1,75 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+const youtubeLinks = [
+  "https://youtu.be/nIUYfReOgLU",
+  "https://youtu.be/JmOBM160jZ0",
+  "https://youtu.be/R03jKvxzJYw",
+  "https://youtu.be/Zkk3cmRqDm0",
+];
+
+type PracticeQuestion = {
+  id: string;
+  type: "mcq" | "text";
+  prompt: string;
+  options?: string[];
+};
+
+const practiceQuestions: PracticeQuestion[] = [
+  {
+    id: "q1",
+    type: "mcq",
+    prompt: "What is the best opening behavior in an interview?",
+    options: [
+      "Start talking quickly to impress",
+      "Greet confidently and wait for the first prompt",
+      "Ask salary questions immediately",
+      "Avoid eye contact to stay calm",
+    ],
+  },
+  {
+    id: "q2",
+    type: "mcq",
+    prompt: "Which answer style usually scores better with interviewers?",
+    options: [
+      "Long and unstructured",
+      "Short and vague",
+      "Structured with clear examples",
+      "Only theoretical statements",
+    ],
+  },
+  {
+    id: "q3",
+    type: "text",
+    prompt: "In 2-4 lines, introduce yourself for a professional interview.",
+  },
+  {
+    id: "q4",
+    type: "mcq",
+    prompt: "How should you handle a question you don't know?",
+    options: [
+      "Panic and stay silent",
+      "Guess randomly with confidence",
+      "Acknowledge it and explain your approach logically",
+      "Change the topic",
+    ],
+  },
+  {
+    id: "q5",
+    type: "text",
+    prompt: "Write one STAR-format example of a challenge you solved.",
+  },
+];
 
 const skills = [
   {
     category: "Communication",
-    icon: "🗣️",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+      </svg>
+    ),
     color: "from-blue-500/15 to-cyan-500/10",
     borderColor: "border-blue-500/20",
     accentColor: "text-blue-400",
@@ -32,7 +96,12 @@ const skills = [
   },
   {
     category: "Body Language",
-    icon: "🧍",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="5" r="2.5" />
+        <path d="M12 8v6m0 0 4 7m-4-7-4 7m4-7 6-3m-6 3-6-3" />
+      </svg>
+    ),
     color: "from-purple-500/15 to-violet-500/10",
     borderColor: "border-purple-500/20",
     accentColor: "text-purple-400",
@@ -53,7 +122,12 @@ const skills = [
   },
   {
     category: "Confidence",
-    icon: "💪",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M8 14c2 0 2-3 4-3 1.7 0 2.5 1.3 3 3h3a2 2 0 0 1 2 2 4 4 0 0 1-4 4H9a5 5 0 0 1-5-5v-1h4z" />
+        <path d="M7 14V9a2 2 0 0 1 2-2h1" />
+      </svg>
+    ),
     color: "from-amber-500/15 to-orange-500/10",
     borderColor: "border-amber-500/20",
     accentColor: "text-amber-400",
@@ -80,7 +154,12 @@ const skills = [
   },
   {
     category: "Professional Presence",
-    icon: "👔",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M8 3h8l-1 5 2 13H7L9 8 8 3z" />
+        <path d="M12 8v13" />
+      </svg>
+    ),
     color: "from-green-500/15 to-emerald-500/10",
     borderColor: "border-green-500/20",
     accentColor: "text-green-400",
@@ -103,6 +182,97 @@ const skills = [
 
 export default function PersonalityDevView() {
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
+  const [selectedVideos, setSelectedVideos] = useState<Record<string, string>>({});
+  const [practiceSkill, setPracticeSkill] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
+  const [quizError, setQuizError] = useState<string | null>(null);
+  const [quizResult, setQuizResult] = useState<{
+    score: number;
+    feedback: string;
+    improvements: string[];
+  } | null>(null);
+
+  const allSkillTitles = useMemo(
+    () => skills.flatMap((group) => group.items.map((item) => item.title)),
+    []
+  );
+
+  const randomVideoBySkill = useMemo(() => {
+    const mapping: Record<string, string> = {};
+    allSkillTitles.forEach((title, index) => {
+      const randomIndex = (index * 7 + 3) % youtubeLinks.length;
+      mapping[title] = youtubeLinks[randomIndex];
+    });
+    return mapping;
+  }, [allSkillTitles]);
+
+  const toEmbedUrl = (url: string) => {
+    const match = url.match(/youtu\.be\/([^?&]+)/);
+    const videoId = match?.[1];
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+  };
+
+  const getCurrentVideoUrl = (skillTitle: string) => selectedVideos[skillTitle] || randomVideoBySkill[skillTitle];
+
+  const handlePracticeNow = (skillTitle: string) => {
+    setPracticeSkill(skillTitle);
+    setAnswers({});
+    setQuizError(null);
+    setQuizResult(null);
+  };
+
+  const submitPracticeQuiz = async () => {
+    if (!practiceSkill) {
+      return;
+    }
+
+    const unanswered = practiceQuestions.some((question) => !answers[question.id]?.trim());
+    if (unanswered) {
+      setQuizError("Please answer all 5 questions.");
+      return;
+    }
+
+    try {
+      setIsSubmittingQuiz(true);
+      setQuizError(null);
+
+      const payload = {
+        skill: practiceSkill,
+        questions: practiceQuestions,
+        answers,
+      };
+
+      const response = await fetch("/api/personality-quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json() as {
+        score?: number;
+        feedback?: string;
+        improvements?: string[];
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to evaluate quiz.");
+      }
+
+      setQuizResult({
+        score: Number(data.score ?? 0),
+        feedback: String(data.feedback ?? "No feedback provided."),
+        improvements: Array.isArray(data.improvements)
+          ? data.improvements.map((item) => String(item))
+          : [],
+      });
+    } catch (error) {
+      setQuizError(error instanceof Error ? error.message : "Failed to evaluate quiz.");
+    } finally {
+      setIsSubmittingQuiz(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -146,7 +316,9 @@ export default function PersonalityDevView() {
           <div key={skillGroup.category}>
             {/* Category header */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">{skillGroup.icon}</span>
+              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg bg-white/10 ${skillGroup.accentColor}`}>
+                {skillGroup.icon}
+              </span>
               <h2 className="text-sm font-semibold text-lightest">
                 {skillGroup.category}
               </h2>
@@ -206,8 +378,13 @@ export default function PersonalityDevView() {
                     {isExpanded && (
                       <div className="px-4 pb-4 animate-fade-in">
                         <div className="border-t border-electric-blue/10 pt-3">
-                          <h4 className="text-[10px] uppercase tracking-wider text-slate font-semibold mb-2">
-                            💡 Practice Tips
+                          <h4 className="text-[10px] uppercase tracking-wider text-slate font-semibold mb-2 flex items-center gap-2">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-electric-blue">
+                              <path d="M9 18h6" />
+                              <path d="M10 22h4" />
+                              <path d="M12 2a7 7 0 0 0-4 12c1 1 2 2 2 4h4c0-2 1-3 2-4a7 7 0 0 0-4-12z" />
+                            </svg>
+                            Practice Tips
                           </h4>
                           <ul className="space-y-1.5">
                             {skill.tips.map((tip, i) => (
@@ -217,7 +394,35 @@ export default function PersonalityDevView() {
                               </li>
                             ))}
                           </ul>
-                          <button className="mt-3 text-[10px] px-3 py-1.5 rounded-lg btn-primary font-medium">
+                          <div className="mt-4 rounded-xl border border-white/10 p-3 bg-navy-light/30 space-y-3">
+                            <label className="block text-[10px] text-slate uppercase tracking-wider font-semibold">
+                              Learning Video
+                            </label>
+                            <select
+                              value={getCurrentVideoUrl(skill.title)}
+                              onChange={(event) => setSelectedVideos((prev) => ({ ...prev, [skill.title]: event.target.value }))}
+                              className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-2.5 py-2 text-[11px] text-lightest"
+                            >
+                              {youtubeLinks.map((videoUrl, index) => (
+                                <option key={`${skill.title}-video-${index}`} value={videoUrl}>
+                                  Video {index + 1}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="rounded-lg overflow-hidden border border-white/10 bg-black">
+                              <iframe
+                                title={`${skill.title} training video`}
+                                src={toEmbedUrl(getCurrentVideoUrl(skill.title))}
+                                className="w-full aspect-video"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              />
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handlePracticeNow(skill.title)}
+                            className="mt-3 text-[10px] px-3 py-1.5 rounded-lg btn-primary font-medium"
+                          >
                             Practice Now →
                           </button>
                         </div>
@@ -230,6 +435,85 @@ export default function PersonalityDevView() {
           </div>
         ))}
       </div>
+
+      {practiceSkill && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 p-4 overflow-y-auto">
+          <div className="max-w-3xl mx-auto bg-[#0f172a] border border-white/10 rounded-2xl p-6 space-y-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-lightest">Practice Quiz: {practiceSkill}</h3>
+                <p className="text-xs text-slate">Answer all 5 questions. Score will be evaluated out of 20 by Gemini.</p>
+              </div>
+              <button
+                onClick={() => setPracticeSkill(null)}
+                className="w-8 h-8 rounded-lg border border-white/20 text-slate hover:text-lightest"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {practiceQuestions.map((question, index) => (
+                <div key={question.id} className="rounded-xl border border-white/10 p-4 bg-[#111827]">
+                  <p className="text-sm font-semibold text-lightest mb-3">
+                    {index + 1}. {question.prompt}
+                  </p>
+
+                  {question.type === "mcq" ? (
+                    <div className="space-y-2">
+                      {question.options?.map((option, optionIndex) => (
+                        <label key={`${question.id}-opt-${optionIndex}`} className="flex items-center gap-2 text-xs text-slate cursor-pointer">
+                          <input
+                            type="radio"
+                            name={question.id}
+                            value={option}
+                            checked={answers[question.id] === option}
+                            onChange={(event) => setAnswers((prev) => ({ ...prev, [question.id]: event.target.value }))}
+                          />
+                          <span>{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <textarea
+                      value={answers[question.id] || ""}
+                      onChange={(event) => setAnswers((prev) => ({ ...prev, [question.id]: event.target.value }))}
+                      className="w-full h-24 rounded-lg bg-[#0b1220] border border-white/10 p-2.5 text-xs text-lightest"
+                      placeholder="Write your answer..."
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={submitPracticeQuiz}
+                disabled={isSubmittingQuiz}
+                className="px-4 py-2 rounded-lg btn-primary text-xs font-semibold disabled:opacity-60"
+              >
+                {isSubmittingQuiz ? "Checking..." : "Submit Practice"}
+              </button>
+              {quizError && <p className="text-xs text-red-400 font-semibold">{quizError}</p>}
+            </div>
+
+            {quizResult && (
+              <div className="rounded-xl border border-electric-blue/20 bg-electric-blue/5 p-4 space-y-3">
+                <p className="text-sm font-bold text-lightest">Score: {quizResult.score} / 20</p>
+                <p className="text-xs text-slate leading-relaxed">{quizResult.feedback}</p>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-electric-blue font-semibold mb-1">Improvements</p>
+                  <ul className="space-y-1">
+                    {quizResult.improvements.map((item, idx) => (
+                      <li key={`improvement-${idx}`} className="text-xs text-light-slate">• {item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

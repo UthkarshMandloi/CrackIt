@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const materialCategories = [
   { id: "all", label: "All" },
@@ -107,12 +107,105 @@ const materials = [
     tags: ["SEO", "Networking", "Personal Brand"],
     progress: 0,
   },
+  {
+    category: "dsa",
+    title: "Top Interview Questions",
+    desc: "LeetCode Top Interview 150 curated study plan.",
+    difficulty: "Mixed",
+    timeEstimate: "35 hours",
+    color: "from-blue-500/15 to-cyan-500/10",
+    borderColor: "border-blue-500/15",
+    icon: "🎓",
+    tags: ["Interview 150", "LeetCode", "Patterns"],
+    progress: 0,
+    link: "https://leetcode.com/studyplan/top-interview-150/",
+  },
+  {
+    category: "dsa",
+    title: "Interview Crash Course",
+    desc: "LeetCode Interview Crash Course: Data Structures and Algorithms.",
+    difficulty: "Intermediate",
+    timeEstimate: "25 hours",
+    color: "from-indigo-500/15 to-blue-500/10",
+    borderColor: "border-indigo-500/15",
+    icon: "🚀",
+    tags: ["Crash Course", "DSA", "Interview Prep"],
+    progress: 0,
+    link: "https://leetcode.com/explore/interview/card/leetcodes-interview-crash-course-data-structures-and-algorithms/?vacRef=problembanner",
+  },
+  {
+    category: "dsa",
+    title: "JavaScript Challenge",
+    desc: "LeetCode 30 Days of JavaScript challenge plan.",
+    difficulty: "Beginner",
+    timeEstimate: "15 hours",
+    color: "from-amber-500/15 to-yellow-500/10",
+    borderColor: "border-amber-500/15",
+    icon: "🟨",
+    tags: ["JavaScript", "30 Days", "Practice"],
+    progress: 0,
+    link: "https://leetcode.com/studyplan/30-days-of-javascript/",
+  },
+  {
+    category: "dsa",
+    title: "LeetCode DSA Problem List",
+    desc: "Focused DSA problem list for coding interview preparation.",
+    difficulty: "Mixed",
+    timeEstimate: "20 hours",
+    color: "from-emerald-500/15 to-green-500/10",
+    borderColor: "border-emerald-500/15",
+    icon: "📌",
+    tags: ["Problem List", "Practice", "DSA"],
+    progress: 0,
+    link: "https://leetcode.com/problem-list/m8baczxh/",
+  },
+  {
+    category: "dsa",
+    title: "GFG Top 100 DSA Interview Questions",
+    desc: "Topic-wise top 100 DSA interview questions from GeeksforGeeks.",
+    difficulty: "Mixed",
+    timeEstimate: "30 hours",
+    color: "from-purple-500/15 to-violet-500/10",
+    borderColor: "border-purple-500/15",
+    icon: "💯",
+    tags: ["Top 100", "GFG", "Topic-wise"],
+    progress: 0,
+    link: "https://www.geeksforgeeks.org/dsa/top-100-data-structure-and-algorithms-dsa-interview-questions-topic-wise/",
+  },
 ];
+
+const fallbackStudyLinks = [
+  "https://leetcode.com/studyplan/top-interview-150/",
+  "https://leetcode.com/explore/interview/card/leetcodes-interview-crash-course-data-structures-and-algorithms/?vacRef=problembanner",
+  "https://leetcode.com/studyplan/30-days-of-javascript/",
+  "https://leetcode.com/problem-list/m8baczxh/",
+  "https://www.geeksforgeeks.org/dsa/top-100-data-structure-and-algorithms-dsa-interview-questions-topic-wise/",
+];
+
+type MaterialItem = (typeof materials)[number] & { link?: string };
 
 export default function SuggestedMaterialView() {
   const [activeFilter, setActiveFilter] = useState("all");
+  const materialsWithLinks = useMemo(
+    () =>
+      materials.map((material, index) => {
+        if (material.link) {
+          return material;
+        }
 
-  const filtered = activeFilter === "all" ? materials : materials.filter((m) => m.category === activeFilter);
+        const randomIndex = (index * 11 + 5) % fallbackStudyLinks.length;
+        return {
+          ...material,
+          link: fallbackStudyLinks[randomIndex],
+        };
+      }),
+    []
+  );
+
+  const filtered: MaterialItem[] =
+    activeFilter === "all"
+      ? materialsWithLinks
+      : materialsWithLinks.filter((m) => m.category === activeFilter);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -146,6 +239,11 @@ export default function SuggestedMaterialView() {
         {filtered.map((mat, i) => (
           <div
             key={i}
+            onClick={() => {
+              if (mat.link) {
+                window.open(mat.link, "_blank", "noopener,noreferrer");
+              }
+            }}
             className={`group rounded-2xl bg-gradient-to-br ${mat.color} border ${mat.borderColor} p-5 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl hover:shadow-black/20 animate-fade-in-up cursor-pointer`}
             style={{ animationDelay: `${i * 60}ms` }}
           >
@@ -185,7 +283,15 @@ export default function SuggestedMaterialView() {
                     </svg>
                     {mat.timeEstimate}
                   </span>
-                  <button className="text-[10px] px-3 py-1.5 rounded-lg btn-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (mat.link) {
+                        window.open(mat.link, "_blank", "noopener,noreferrer");
+                      }
+                    }}
+                    className="text-[10px] px-3 py-1.5 rounded-lg btn-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     Start Learning →
                   </button>
                 </div>

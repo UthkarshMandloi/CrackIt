@@ -38,13 +38,16 @@ export default function RadarReport({
   ];
 
   return (
-    <div id="radar-report" className="fixed inset-0 z-[100] bg-[#1A1A2E]/50 backdrop-blur-xl animate-fade-in overflow-y-auto">
-      <div className="min-h-full flex items-start justify-center py-8 px-4">
-      <div className="w-full max-w-4xl rounded-[40px] bg-white border border-[#EA4C89]/10 p-10 shadow-elevated animate-fade-in-up relative my-4">
+    <div id="radar-report" className="fixed inset-0 z-[100] bg-[#1A1A2E]/40 backdrop-blur-2xl animate-fade-in overflow-y-auto">
+      <div className="min-h-full flex items-start justify-center py-8 px-4 relative liquid-bg">
+      {/* Liquid blobs behind report */}
+      <div className="liquid-blob liquid-blob-pink w-[400px] h-[400px] top-[10%] left-[10%] opacity-40" />
+      <div className="liquid-blob liquid-blob-purple w-[300px] h-[300px] bottom-[20%] right-[10%] opacity-30" />
+      <div className="w-full max-w-4xl rounded-[40px] glass-strong p-10 shadow-elevated animate-fade-in-up relative my-4 z-10 aurora-border">
         {/* Close Button */}
         <button 
           onClick={onRestart}
-          className="absolute top-8 right-8 w-10 h-10 rounded-xl bg-[#FDF0F5] hover:bg-[#EA4C89]/15 flex items-center justify-center transition-colors group"
+          className="absolute top-8 right-8 w-10 h-10 rounded-xl glass hover:bg-[#EA4C89]/15 flex items-center justify-center transition-colors group"
         >
           <svg className="w-5 h-5 text-[#EA4C89]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />

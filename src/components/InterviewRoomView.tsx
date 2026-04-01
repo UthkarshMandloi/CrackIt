@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useInterview } from "@/hooks/useInterview";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { useAudioAnalyser } from "@/hooks/useAudioAnalyser";
@@ -8,19 +9,68 @@ import SelfView from "@/components/SelfView";
 import ControlBar from "@/components/ControlBar";
 import RadarReport from "@/components/RadarReport";
 import { ROLE_OPTIONS, INTERVIEW_TYPES, LANGUAGE_OPTIONS, TONE_OPTIONS } from "@/lib/constants";
+import { useAuth } from "@/components/AuthContext";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import DIDAgentView from "@/components/DIDAgentView";
 
-const D_ID_SHARE_URL = process.env.D_ID_URL ?? "";
+const D_ID_SHARE_URL = process.env.NEXT_PUBLIC_D_ID_URL || "https://studio.d-id.com/agents/share?id=v2_agt_PYjxDF3z&utm_source=copy&key=Y2tfWjlmeGdyeEI5OVQweEN4SXFVYU9N";
 
 // ===== Setup Panel =====
 function SetupPanel({ onStart }: { onStart: (role: string, type: string, lang: string, tone: string, resume: string) => void }) {
-  const [role, setRole] = useState("fullstack");
+  const { user } = useAuth();
+    const searchParams = useSearchParams();
+    const defaultRole = searchParams.get("role") || "fullstack";
+
+    const [role, setRole] = useState(defaultRole);
   const [type, setType] = useState("mixed");
   const [lang, setLang] = useState("english");
   const [tone, setTone] = useState("professional");
   const [resume, setResume] = useState("");
   const [isStarting, setIsStarting] = useState(false);
+  const [isLoadingContext, setIsLoadingContext] = useState(false);
+
+  useEffect(() => {
+    const loadSavedContext = async () => {
+      if (!user?.uid) {
+        return;
+      }
+
+      try {
+        setIsLoadingContext(true);
+        const [resumeSnapshot, positionSnapshot] = await Promise.all([
+          getDoc(doc(db, "users", user.uid, "profile", "resume")),
+          getDoc(doc(db, "users", user.uid, "profile", "position")),
+        ]);
+
+        const resumeText = resumeSnapshot.exists()
+          ? String((resumeSnapshot.data() as { extractedText?: string }).extractedText ?? "").trim()
+          : "";
+        const positionText = positionSnapshot.exists()
+          ? String((positionSnapshot.data() as { extractedText?: string }).extractedText ?? "").trim()
+          : "";
+
+        const sections: string[] = [];
+        if (resumeText) {
+          sections.push(`Resume:\n${resumeText}`);
+        }
+        if (positionText) {
+          sections.push(`Job Description:\n${positionText}`);
+        }
+
+        if (sections.length > 0) {
+          setResume((prev) => (prev.trim().length > 0 ? prev : sections.join("\n\n")));
+        }
+      } catch (error) {
+        console.error("Failed to load saved resume/position context:", error);
+      } finally {
+        setIsLoadingContext(false);
+      }
+    };
+
+    loadSavedContext();
+  }, [user?.uid]);
 
   const handleStart = () => {
     setIsStarting(true);
@@ -29,12 +79,17 @@ function SetupPanel({ onStart }: { onStart: (role: string, type: string, lang: s
   };
 
   return (
-    <div className="min-h-full flex items-center justify-center bg-pink-mesh py-12">
-      <div className="w-full max-w-2xl p-4 animate-fade-in-up">
+    <div className="min-h-full flex items-center justify-center bg-pink-mesh py-12 liquid-bg relative">
+      {/* Liquid background blobs */}
+      <div className="liquid-blob liquid-blob-pink w-[400px] h-[400px] -top-20 -right-20" />
+      <div className="liquid-blob liquid-blob-purple w-[300px] h-[300px] bottom-10 -left-10" />
+      <div className="liquid-blob liquid-blob-peach w-[250px] h-[250px] top-[50%] left-[60%]" />
+      
+      <div className="w-full max-w-2xl p-4 animate-fade-in-up relative z-10">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EA4C89] to-[#D63B75] flex items-center justify-center shadow-elevated">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EA4C89] to-[#D63B75] flex items-center justify-center shadow-glow animate-pulse-glow">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                 <polygon points="23 7 16 12 23 17 23 7" />
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
@@ -45,8 +100,8 @@ function SetupPanel({ onStart }: { onStart: (role: string, type: string, lang: s
           <p className="text-sm text-slate-500 font-medium">Configure your session parameters below</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-[32px] p-8 shadow-elevated border border-[#EA4C89]/10 space-y-8">
+        {/* Card — Glass */}
+        <div className="glass-card rounded-[32px] p-8 space-y-8 aurora-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-7">
             {/* Target Role */}
             <div className="space-y-3">
@@ -118,7 +173,9 @@ function SetupPanel({ onStart }: { onStart: (role: string, type: string, lang: s
               <label className="block text-[11px] font-bold text-[#EA4C89] uppercase tracking-widest">
                 Resume / Job Context
               </label>
-              <span className="text-[10px] text-[#EA4C89]/60 font-bold italic">AI personalizes analysis based on this</span>
+              <span className="text-[10px] text-[#EA4C89]/60 font-bold italic">
+                {isLoadingContext ? "Loading saved context..." : "AI personalizes analysis based on this"}
+              </span>
             </div>
             <textarea
               value={resume}
@@ -227,9 +284,13 @@ export default function InterviewRoomView() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#FFFAFC]">
-      {/* ─── Top Header Bar ─── */}
-      <div className="flex items-center justify-between px-6 py-3 bg-white/80 backdrop-blur-xl border-b border-[#EA4C89]/8 shadow-soft relative z-10 shrink-0">
+    <div className="h-full flex flex-col bg-[#FFFAFC] liquid-bg relative">
+      {/* Subtle background blobs for depth */}
+      <div className="liquid-blob liquid-blob-pink w-[300px] h-[300px] top-0 right-0 opacity-40" />
+      <div className="liquid-blob liquid-blob-purple w-[250px] h-[250px] bottom-0 left-0 opacity-30" />
+      
+      {/* ─── Top Header Bar — Glass ─── */}
+      <div className="flex items-center justify-between px-6 py-3 glass-strong border-b border-[#EA4C89]/8 relative z-10 shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="w-9 h-9 rounded-xl hover:bg-[#FDF0F5] flex items-center justify-center transition-colors group">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.5" className="group-hover:stroke-[#EA4C89] transition-colors">
@@ -253,7 +314,7 @@ export default function InterviewRoomView() {
 
         <div className="flex items-center gap-3">
           {/* Session Timer */}
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#FDF0F5] border border-[#EA4C89]/10">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl glass-pink">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EA4C89" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
@@ -261,7 +322,7 @@ export default function InterviewRoomView() {
             <span className="text-xs font-bold text-[#EA4C89] tabular-nums"><SessionTimer /></span>
           </div>
           {/* Live Recording */}
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#EA4C89] text-white">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#EA4C89] text-white shadow-glow">
             <div className="h-2 w-2 rounded-full bg-white animate-recording" />
             <span className="text-[10px] font-bold tracking-wide">Live Recording</span>
           </div>
@@ -272,10 +333,10 @@ export default function InterviewRoomView() {
       <div className="flex-1 flex gap-5 p-5 min-h-0 overflow-hidden">
         {/* LEFT: AI Interviewer (Larger) */}
         <div className="flex-1 min-h-0 flex flex-col gap-4">
-          <div className="flex-1 bg-white rounded-[28px] border border-[#EA4C89]/8 shadow-card relative overflow-hidden group">
+          <div className="flex-1 glass-card rounded-[28px] relative overflow-hidden group">
             <DIDAgentView url={D_ID_SHARE_URL} />
             {/* Interviewer Label */}
-            <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/70 backdrop-blur-lg border border-white/50 shadow-soft">
+            <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-2 rounded-2xl glass">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#EA4C89] to-[#D63B75] flex items-center justify-center">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -288,7 +349,7 @@ export default function InterviewRoomView() {
               </div>
             </div>
             {/* Audio indicator */}
-            <div className="absolute top-5 right-5 flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/70 backdrop-blur-lg border border-white/50 shadow-soft">
+            <div className="absolute top-5 right-5 flex items-center gap-2 px-3 py-2 rounded-2xl glass">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EA4C89" strokeWidth="2.5">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
@@ -300,9 +361,9 @@ export default function InterviewRoomView() {
         {/* RIGHT: Self-view + Transcript */}
         <div className="w-[400px] flex-shrink-0 min-h-0 flex flex-col gap-4">
           {/* Self View Camera */}
-          <div className="h-[45%] bg-white rounded-[28px] border border-[#EA4C89]/8 shadow-card relative overflow-hidden group">
+          <div className="h-[45%] glass-card rounded-[28px] relative overflow-hidden group">
             <SelfView />
-            <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/70 backdrop-blur-lg border border-white/50 shadow-soft">
+            <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-2 rounded-2xl glass">
               <div className="w-7 h-7 rounded-lg bg-[#EA4C89]/10 flex items-center justify-center">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EA4C89" strokeWidth="2.5">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -314,7 +375,7 @@ export default function InterviewRoomView() {
           </div>
 
           {/* Audio Levels */}
-          <div className="h-16 bg-white rounded-2xl border border-[#EA4C89]/8 px-5 flex items-center gap-4 shadow-soft">
+          <div className="h-16 glass rounded-2xl px-5 flex items-center gap-4">
             <div className={`w-2.5 h-2.5 rounded-full ${audio.isActive ? 'bg-[#EA4C89] animate-pulse' : 'bg-slate-300'}`} />
             <div className="flex-1 h-5 bg-[#FDF0F5] rounded-full overflow-hidden flex gap-px p-0.5">
               {(audio.isActive ? Array.from(audio.frequencyData.slice(0, 48)) : Array.from({ length: 48 }).map(() => 0)).map((val, i) => (
@@ -332,8 +393,8 @@ export default function InterviewRoomView() {
           </div>
 
           {/* Live Transcript */}
-          <div className="flex-1 bg-[#1A1A2E] rounded-[28px] border border-white/5 p-5 shadow-elevated relative overflow-hidden flex flex-col">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#EA4C89]/8 to-transparent opacity-60" />
+          <div className="flex-1 glass-dark rounded-[28px] p-5 relative overflow-hidden flex flex-col">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#EA4C89]/10 to-[#6366F1]/5 opacity-60" />
             <div className="relative z-10 flex flex-col gap-3 flex-1 min-h-0">
               {/* Header */}
               <div className="flex items-center justify-between shrink-0">

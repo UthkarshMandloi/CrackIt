@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthContext";
@@ -10,10 +10,15 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Codze AI | Real-Time AI Interview Support",
+  title: "Crack!t | Real-Time AI Interview Support",
   description:
     "The world's most advanced AI interview preparation platform. Ace every interview with real-time AI guidance and performance analytics.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -25,6 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${montserrat.variable} antialiased`}>
         <AuthProvider>
+          <div className="fixed inset-0 z-[-1] bg-stars opacity-40 pointer-events-none" />
           {children}
         </AuthProvider>
       </body>

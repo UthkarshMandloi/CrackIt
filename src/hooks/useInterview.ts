@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import type { InterviewState, InterviewReport } from "@/lib/types";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from "firebase/firestore";
 
 const initialState: InterviewState = {
@@ -44,21 +44,37 @@ export function useInterview() {
     setState((prev) => ({ ...prev, isMuted: !prev.isMuted }));
   }, []);
 
-  const saveInterviewToFirestore = useCallback(async (rawTranscript: string, reportData?: any) => {
+  const saveInterviewToFirestore = useCallback(async (rawTranscript: string, reportData?: InterviewReport) => {
     try {
-      const interviewData: any = {
+      const currentUserId = auth.currentUser?.uid ?? null;
+      const interviewData: Record<string, unknown> = {
         targetRole: state.targetRole,
         interviewType: state.interviewType,
         rawTranscript,
-        createdAt: serverTimestamp(),
+        userId: currentUserId,
+        updatedAt: serverTimestamp(),
       };
+
+      if (!docIdRef.current) {
+        interviewData.createdAt = serverTimestamp();
+      }
 
       if (reportData) {
         interviewData.report = reportData;
+        interviewData.reportGeneratedAt = serverTimestamp();
       }
 
       if (docIdRef.current) {
-        await updateDoc(doc(db, "interviews", docIdRef.current), interviewData);
+        try {
+          await updateDoc(doc(db, "interviews", docIdRef.current), interviewData);
+        } catch (updateError) {
+          console.warn("Interview update failed, creating new document:", updateError);
+          const fallbackDocRef = await addDoc(collection(db, "interviews"), {
+            ...interviewData,
+            createdAt: serverTimestamp(),
+          });
+          docIdRef.current = fallbackDocRef.id;
+        }
       } else {
         const docRef = await addDoc(collection(db, "interviews"), interviewData);
         docIdRef.current = docRef.id;

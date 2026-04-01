@@ -10,7 +10,8 @@ export type SidebarRoute =
   | "/dashboard/interview"
   | "/dashboard/questions"
   | "/dashboard/study"
-  | "/dashboard/personality";
+  | "/dashboard/personality"
+  | "/dashboard/ats";
 
 const navItems: { id: SidebarRoute; label: string; icon: React.ReactNode }[] = [
   {
@@ -68,6 +69,19 @@ const navItems: { id: SidebarRoute; label: string; icon: React.ReactNode }[] = [
       </svg>
     ),
   },
+  {
+    id: "/dashboard/ats",
+    label: "ATS Checker",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+        <path d="M8 11h6" />
+        <path d="M8 8h8" />
+        <path d="M8 14h4" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
@@ -77,18 +91,17 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full z-50 flex flex-col transition-all duration-300 ease-out bg-white border-r border-slate-200 shadow-soft ${
+      className={`fixed left-0 top-0 h-full z-50 flex flex-col transition-all duration-300 ease-out bg-[#0a0a0f] border-r border-white/5 ${
         isExpanded ? "w-56" : "w-[68px]"
       }`}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
       id="sidebar"
     >
-      {/* Content */}
       <div className="relative flex flex-col h-full py-4 px-3">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-3 px-2 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EA4C89] to-[#D63B75] flex items-center justify-center flex-shrink-0 shadow-glow">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
               <polygon points="12 2 2 7 12 12 22 7 12 2" />
               <polyline points="2 17 12 22 22 17" />
@@ -96,11 +109,11 @@ export default function Sidebar() {
             </svg>
           </div>
           <span
-            className={`text-sm font-bold text-slate-900 whitespace-nowrap transition-opacity duration-200 ${
+            className={`text-sm font-bold text-white whitespace-nowrap transition-opacity duration-200 ${
               isExpanded ? "opacity-100" : "opacity-0"
             }`}
           >
-            Codze AI
+            CRACK!T AI
           </span>
         </Link>
 
@@ -114,8 +127,8 @@ export default function Sidebar() {
                 href={item.id}
                 className={`w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-200 group ${
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    ? "bg-[#EA4C89]/15 text-[#EA4C89]"
+                    : "text-white/40 hover:text-white/80 hover:bg-white/5"
                 }`}
                 title={item.label}
               >
@@ -131,7 +144,7 @@ export default function Sidebar() {
                 </span>
                 {isActive && (
                   <span
-                    className={`ml-auto h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0 transition-opacity duration-200 ${
+                    className={`ml-auto h-1.5 w-1.5 rounded-full bg-[#EA4C89] flex-shrink-0 transition-opacity duration-200 ${
                       isExpanded ? "opacity-100" : "opacity-0"
                     }`}
                   />
@@ -142,14 +155,14 @@ export default function Sidebar() {
         </nav>
 
         {/* User profile bottom */}
-        <div className="pt-4 mt-auto border-t border-slate-100">
+        <div className="pt-4 mt-auto border-t border-white/5">
           <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EA4C89] to-[#D63B75] flex items-center justify-center flex-shrink-0">
               {user?.photoURL ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.photoURL} alt="User" className="w-8 h-8 rounded-full" />
               ) : (
-                <span className="text-[10px] font-bold text-slate-500">{user?.displayName?.charAt(0) || "U"}</span>
+                <span className="text-[10px] font-bold text-white">{user?.displayName?.charAt(0) || "U"}</span>
               )}
             </div>
             <div
@@ -157,10 +170,10 @@ export default function Sidebar() {
                 isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
               }`}
             >
-              <p className="text-[11px] font-bold text-slate-900 whitespace-nowrap">
+              <p className="text-[11px] font-bold text-white/80 whitespace-nowrap">
                 {user?.displayName || "User Name"}
               </p>
-              <p className="text-[9px] text-slate-500 whitespace-nowrap">
+              <p className="text-[9px] text-white/30 whitespace-nowrap">
                 Member
               </p>
             </div>

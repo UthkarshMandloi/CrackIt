@@ -7,8 +7,16 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const handleNavigate = (view: string) => {
-    // In the new routing system, we navigate to the actual URL
-    const route = view === "dashboard" ? "/dashboard" : `/dashboard/${view.replace("-room", "").replace("-", "")}`;
+    const routes: Record<string, string> = {
+      dashboard: "/dashboard",
+      "interview-room": "/dashboard/interview",
+      "mock-questions": "/dashboard/questions",
+      "study-material": "/dashboard/study",
+      "personality-dev": "/dashboard/personality",
+      "interview-report": "/dashboard/reports",
+    };
+
+    const route = routes[view] ?? "/dashboard";
     router.push(route);
   };
 

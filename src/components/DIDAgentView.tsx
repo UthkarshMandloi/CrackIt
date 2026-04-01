@@ -25,7 +25,7 @@ export default function DIDAgentView({ url }: DIDAgentViewProps) {
             top: '-25%',    // Removes D-ID Header
             left: '-30%',   // Centers horizontally
           }}
-          allow="microphone; camera; clipboard-write; display-capture"
+          allow="microphone; camera; autoplay; encrypted-media; clipboard-write; display-capture"
         />
       </div>
 
@@ -42,7 +42,7 @@ export default function DIDAgentView({ url }: DIDAgentViewProps) {
       
       {/* Instruction Tip */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/80 backdrop-blur-md rounded-xl border border-white/10 text-white/60 text-[9px] font-bold uppercase tracking-widest z-20 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-        Click "Start Conversation" if prompted inside the video
+        Click &quot;Start Conversation&quot; if prompted inside the video
       </div>
     </div>
   );

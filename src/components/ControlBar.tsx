@@ -17,7 +17,7 @@ export default function ControlBar({
 }: ControlBarProps) {
   return (
     <div className="w-full flex items-center justify-center pointer-events-none">
-      <div className="pointer-events-auto flex items-center gap-2 p-2.5 bg-white rounded-[28px] border border-[#EA4C89]/10 shadow-elevated backdrop-blur-xl">
+      <div className="pointer-events-auto flex items-center gap-2 p-2.5 glass-strong rounded-[28px] shadow-elevated">
         {/* Mute Toggle */}
         <button
           onClick={onToggleMute}
