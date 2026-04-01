@@ -45,7 +45,6 @@ export default function ATSPage() {
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjs.getDocument({
       data: new Uint8Array(arrayBuffer),
-      disableWorker: true,
     });
 
     const timeoutMs = 25000;

@@ -204,7 +204,6 @@ export default function DashboardView({ onNavigate }: DashboardViewProps) {
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjs.getDocument({
       data: new Uint8Array(arrayBuffer),
-      disableWorker: true,
     });
     const timeoutMs = 25000;
     const timeoutPromise = new Promise<never>((_, reject) => {
