@@ -208,9 +208,20 @@ export default function PersonalityDevView() {
   }, [allSkillTitles]);
 
   const toEmbedUrl = (url: string) => {
-    const match = url.match(/youtu\.be\/([^?&]+)/);
-    const videoId = match?.[1];
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+    if (!url) return "about:blank";
+    
+    let videoId = "";
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+    if (shortMatch) {
+      videoId = shortMatch[1];
+    } else {
+      const longMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+      if (longMatch) {
+        videoId = longMatch[1];
+      }
+    }
+    
+    return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : "about:blank";
   };
 
   const getCurrentVideoUrl = (skillTitle: string) => selectedVideos[skillTitle] || randomVideoBySkill[skillTitle];
